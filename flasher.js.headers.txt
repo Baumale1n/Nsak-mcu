@@ -1,0 +1,16 @@
+HTTP/2 200 
+date: Mon, 24 Aug 2026 12:52:45 GMT
+content-type: text/javascript; charset=utf-8
+content-length: 24641
+cache-control: max-age=14400
+content-disposition: inline; filename=flasher.js
+etag: "1787502765.5622737-24641-1662259273"
+last-modified: Sun, 23 Aug 2026 16:32:45 GMT
+server: cloudflare
+accept-ranges: bytes
+cf-cache-status: REVALIDATED
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=jK7QyKEF%2BFghh7QjJJTLM%2FFGKN5RHHfY2mvz4M1f3hkJP87NZJgJKrzAiD71oVorK3e1O0tfELwxJPQeTMpHS9BiH4IB4hlTeNTyUB2WANxJ1vPe%2BEgOSipUx3HpFJBS"}]}
+cf-ray: a3027efa0d8eb5ad-AMS
+alt-svc: h3=":443"; ma=86400
+

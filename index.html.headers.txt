@@ -1,0 +1,11 @@
+HTTP/2 200 
+date: Mon, 24 Aug 2026 12:53:10 GMT
+content-type: text/html; charset=utf-8
+server: cloudflare
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lGSqiyis5SAV6zp0PTFTpQthEcKOBOLUyFg8o3O9Icnuv%2Fu9bwVjaGEGcn0TVEP8zVuqIapnuVGnp1c05O3t%2Fz%2FIaS7boMNLTfg7VWGaZVQK0cD91JazjhMYYQ%3D%3D"}]}
+cf-ray: a3027f946e38af69-FRA
+alt-svc: h3=":443"; ma=86400
+

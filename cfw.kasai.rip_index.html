@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kasai's cfw builder</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    
+    <div class="bg-noise"></div>
+
+    <!-- Disclaimer Modal -->
+    <div class="disclaimer-overlay" id="disclaimer-overlay">
+        <div class="disclaimer-box">
+            <div class="disclaimer-eyebrow">
+                <span class="disclaimer-eyebrow-dot"></span>
+                Private property only
+            </div>
+            <div class="disclaimer-title">Legal Disclaimer</div>
+            <div class="disclaimer-sub">Read carefully before proceeding</div>
+            <div class="disclaimer-divider"></div>
+            <div class="disclaimer-body">
+                This tool generates custom firmware for electric scooters.<br><br>
+                <b>Use on public roads is strictly prohibited.</b> This software is intended exclusively for use on <b>private property</b> (closed circuits, private grounds, testing areas) where all applicable laws and regulations are met.<br><br>
+                We accept <b>no liability</b> for any damage to persons, vehicles, third parties, or property arising from the use of generated firmware. You flash your device entirely <b>at your own risk and responsibility.</b>
+            </div>
+            <label class="disclaimer-check-wrap" id="disclaimer-check-wrap" for="disclaimer-check">
+                <div class="disclaimer-checkbox" id="disclaimer-checkbox-visual">
+                    <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+                </div>
+                <input type="checkbox" id="disclaimer-check" style="display:none;">
+                <span class="disclaimer-check-text">I accept — for private property use only</span>
+            </label>
+            <button type="button" class="disclaimer-btn" id="disclaimer-btn" disabled>
+                <span class="disclaimer-btn-label">
+                    Continue
+                    <span class="disclaimer-timer" id="disclaimer-timer">wait 10s</span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="lang-switch" id="lang-switch">
+        <button type="button" class="lang-btn" data-lang="de">DE</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <div class="container">
+        <header class="header">
+            <div class="header-badge">beta version! v2.1</div>
+            <h1 data-i18n="title" data-i18n-html="1">kasai's <span class="accent">cfw builder</span></h1>
+
+        </header>
+
+        
+
+        
+        <div class="mode-tabs" id="mode-tabs">
+            <button type="button" class="mode-tab active" data-mode="builder" data-i18n="tab_builder">Builder</button>
+            <button type="button" class="mode-tab" data-mode="more" data-i18n="tab_more">More</button>
+        </div>
+        <p class="mode-hint" id="mode-hint" data-i18n="mode_hint_builder">Build and patch firmware for your scooter.</p>
+
+<form id="patch-form">
+        <div id="panel-hard">
+
+            <div class="switcher" id="component-switcher">
+                <button type="button" class="switcher-btn active" data-component="VCU">VCU</button>
+                <button type="button" class="switcher-btn" data-component="BLE">BLE</button>
+                <button type="button" class="switcher-btn" data-component="BMS">BMS</button>
+                <button type="button" class="switcher-btn" data-component="MCU">MCU</button>
+            </div>
+
+            <div class="switcher" id="model-switcher">
+                
+                <button type="button"
+                        class="switcher-btn active"
+                        data-model="g3"
+                        >
+                    G3 Max
+                </button>
+                
+                <button type="button"
+                        class="switcher-btn"
+                        data-model="zt3"
+                        >
+                    ZT3 Pro
+                </button>
+                
+                <button type="button"
+                        class="switcher-btn"
+                        data-model="f3"
+                        >
+                    F3/F3 Pro
+                </button>
+                
+                <button type="button"
+                        class="switcher-btn"
+                        data-model="gt3d"
+                        >
+                    GT3D
+                </button>
+                
+            </div>
+
+            <div class="sys-alert" id="ble-info" style="display: none;" data-i18n="ble_info">GT3 BLE (screen firmware) patched directly from SHU compat mirror</div>
+
+            <div class="warn-alert" id="bms-warning" style="display: none;">
+                <span data-i18n="bms_warning">!EXPERIMENTAL FIRMWARE! BRICKING AND OVERCURRENT RISKS WE ARE NOT RESPONSIBLE FOR ANY DAMAGE</span>
+            </div>
+            <div class="sys-alert" id="bms-info" style="display: none;" data-i18n="bms_info">GT3 BMS (battery firmware) patched directly from SHU compat mirror</div>
+
+            <div class="warn-alert" id="gt3-warning" style="display: none;" data-i18n="gt3_warning">
+                !UNSTABLE AND EXPERIMENTAL FIRMWARE!
+            </div>
+
+            <div class="accordion" id="settings-accordion">
+
+                <section class="section open" id="section-speed">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="speed_settings">Speed Limit Settings</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron">
+                            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
+                    </button>
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div id="normal-profile" style="display: none;">
+                                    <div class="section-note" style="margin: 0 0 14px;" data-i18n="normal_profile">legal profile</div>
+                                    <div class="slider-group">
+                                        <div class="slider-head">
+                                            <label for="normal-eco">eco</label>
+                                            <span class="slider-value"><span id="normal-eco-display">15</span><span class="unit">km/h</span></span>
+                                        </div>
+                                        <input type="range" id="normal-eco" min="0" max="30" value="15">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-head">
+                                            <label for="normal-drive">drive</label>
+                                            <span class="slider-value"><span id="normal-drive-display">20</span><span class="unit">km/h</span></span>
+                                        </div>
+                                        <input type="range" id="normal-drive" min="0" max="30" value="20">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-head">
+                                            <label for="normal-sport">sport</label>
+                                            <span class="slider-value"><span id="normal-sport-display">22</span><span class="unit">km/h</span></span>
+                                        </div>
+                                        <input type="range" id="normal-sport" min="0" max="30" value="22">
+                                    </div>
+                                    <div style="height: 1px; background: var(--line); margin: 18px 0;"></div>
+                                </div>
+                                <div class="section-note" style="margin: 0 0 14px;" data-i18n="tuning_profile">tuning profile</div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="eco">eco</label>
+                                        <span class="slider-value"><span id="eco-display">22</span><span class="unit">km/h</span></span>
+                                    </div>
+                                    <input type="range" id="eco" min="0" max="127" value="22">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="drive">drive</label>
+                                        <span class="slider-value"><span id="drive-display">40</span><span class="unit">km/h</span></span>
+                                    </div>
+                                    <input type="range" id="drive" min="0" max="127" value="40">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="sport">sport</label>
+                                        <span class="slider-value"><span id="sport-display">100</span><span class="unit">km/h</span></span>
+                                    </div>
+                                    <input type="range" id="sport" min="0" max="127" value="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section" id="section-mode">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="panic_settings">Panic Settings</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron">
+                            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
+                    </button>
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div class="toggle-row" id="police-row">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="police_mode">police mode</span>
+                                        
+                                    </span>
+                                    <label class="toggle" id="police-toggle-wrap">
+                                        <input type="checkbox" id="police-toggle">
+                                        <span class="toggle-track"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-row" id="onlytuning-row" style="display: none;">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="tuning_always_active">tuning always active</span>
+                                        <span class="toggle-desc"></span>
+                                    </span>
+                                    <label class="toggle" id="onlytuning-toggle-wrap">
+                                        <input type="checkbox" id="onlytuning-toggle">
+                                        <span class="toggle-track"></span>
+                                    </label>
+                                </div>
+
+                                <div class="toggle-row" id="panic-row" style="display: none;">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="panicbutton">panicbutton</span>
+                                        <span class="toggle-desc"></span>
+                                    </span>
+                                    <label class="toggle" id="panic-toggle-wrap">
+                                        <input type="checkbox" id="panic-toggle">
+                                        <span class="toggle-track"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section" id="section-personal" data-models="zt3">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="personalisation">Personalisation</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron">
+                            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
+                    </button>
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div class="toggle-row">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="show_battery_idle">show battery when idle</span>
+                                        <span class="toggle-desc" data-i18n="show_battery_desc">shows battery on screen when not driving</span>
+                                    </span>
+                                    <label class="toggle" id="ghost-toggle-wrap">
+                                        <input type="checkbox" id="ghost-toggle">
+                                        <span class="toggle-track"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <div id="mcu-settings" style="display: none;">
+               <!-- <div class="sys-alert" data-i18n="mcu_info">MCU field weakening • x3_MCU_AT32 (zt3 / f3 / g3) • gt3_MCU_AT32 (gt3)</div>
+-->
+                <div class="preset-row">
+                    <span class="preset-label" data-i18n="mcu_presets">presets</span>
+                    <button type="button" class="preset-btn preset-chill" data-preset="chill" data-i18n="mcu_preset_chill">Chill Ride</button>
+                    <button type="button" class="preset-btn preset-fast" data-preset="fast" data-i18n="mcu_preset_fast">Fast</button>
+                    <button type="button" class="preset-btn preset-unsafe" data-preset="unsafe" data-i18n="mcu_preset_unsafe">Unsafe</button>
+                </div>
+
+                <div class="section open">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="mcu_iqfw_head">FW Torque Current (iqFW)</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+                    </button>
+                   
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div class="toggle-row">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="mcu_iqfw_toggle">iqFW enabled</span>
+                                        <span class="toggle-desc" data-i18n="mcu_iqfw_desc">Envelope 20–99 A</span>
+                                    </span>
+                                    <label class="toggle"><input type="checkbox" id="mcu-iqfw-enabled"><span class="toggle-track"></span></label>
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="mcu-iqfw" data-i18n="mcu_amp">Ampere</label>
+                                        <span class="slider-value"><span id="mcu-iqfw-display">60</span><span class="unit">A</span></span>
+                                    </div>
+                                    <input type="range" id="mcu-iqfw" min="20" max="99" step="0.5" value="60">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+ <br>
+                <div class="section">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="mcu_idfw_head">FW Current (idFW)</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+                    </button>
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div class="toggle-row">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="mcu_idfw_toggle">idFW enabled</span>
+                                        <span class="toggle-desc" data-i18n="mcu_idfw_desc">Injection 10–120 A</span>
+                                    </span>
+                                    <label class="toggle"><input type="checkbox" id="mcu-idfw-enabled"><span class="toggle-track"></span></label>
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="mcu-idfw" data-i18n="mcu_current">Current</label>
+                                        <span class="slider-value"><span id="mcu-idfw-display">50</span><span class="unit">A</span></span>
+                                    </div>
+                                    <input type="range" id="mcu-idfw" min="10" max="120" step="1" value="50">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="mcu-engage" data-i18n="mcu_engage">Field weakening start speed</label>
+                                        <span class="slider-value"><span id="mcu-engage-display">35</span><span class="unit">km/h</span></span>
+                                    </div>
+                                    <input type="range" id="mcu-engage" min="0" max="120" step="1" value="35">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="mcu-slope" data-i18n="mcu_slope">Slope</label>
+                                        <span class="slider-value"><span id="mcu-slope-display">250</span><span class="unit">mA/km/h</span></span>
+                                    </div>
+                                    <input type="range" id="mcu-slope" min="10" max="8000" step="10" value="250">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+ <br>
+                <div class="section">
+                    <button type="button" class="section-head" data-toggle-section>
+                        <span>
+                            <span class="head-label" data-i18n="mcu_od_head">Power Overdrive</span>
+                            <span class="head-sub"></span>
+                        </span>
+                        <span class="chevron"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+                    </button>
+                    <div class="section-body">
+                        <div class="body-inner">
+                            <div class="body-content">
+                                <div class="toggle-row">
+                                    <span>
+                                        <span class="toggle-text" data-i18n="mcu_od_toggle">Overdrive enabled</span>
+                                        <span class="toggle-desc" data-i18n="mcu_od_desc">30–100 %</span>
+                                    </span>
+                                    <label class="toggle"><input type="checkbox" id="mcu-od-enabled"><span class="toggle-track"></span></label>
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-head">
+                                        <label for="mcu-od" data-i18n="mcu_od_label">Overdrive</label>
+                                        <span class="slider-value"><span id="mcu-od-display">95</span><span class="unit">%</span></span>
+                                    </div>
+                                    <input type="range" id="mcu-od" min="0" max="100" step="1" value="95">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sys-alert" id="component-comingsoon" style="display: none;" data-i18n="coming_soon">coming soon</div>
+ <br>
+            <div class="build">
+                <button type="submit" class="build-btn" id="patch-btn">
+                    <span class="spinner" id="spinner" style="display: none;"></span>
+                    <span class="btn-label" id="btn-label" data-i18n="build">build firmware</span>
+                </button>
+                <div class="progress" id="progress"><span></span></div>
+            </div>
+            <div class="soft-card" id="flash-block" style="display:none;margin-top:.8rem">
+                <div class="soft-card-title" data-i18n="ble_flash_title">BLE Flash</div>
+                <div class="soft-muted" style="margin:.3rem 0 .7rem" data-i18n="ble_flash_hint">After building, connect to your scooter and flash. On first pairing you may need to press the power button.</div>
+                <button type="button" class="build-btn soft-btn" id="flash-btn" disabled data-i18n="ble_flash_btn">Flash to scooter</button>
+                <div class="soft-flash-bar" style="margin-top:12px"><i id="hard-flash-bar-fill"></i></div>
+                <div class="soft-muted" id="flash-status" style="margin-top:.45rem"></div>
+            </div></div><!-- /panel-hard -->
+
+        <div id="panel-more" style="display:none">
+          <div class="soft-card more-card">
+            <div class="soft-card-title" data-i18n="more_community">Community</div>
+            <div class="soft-muted" style="margin:.35rem 0 1rem" data-i18n="more_community_sub">Join the Discord for support, updates, and testing feedback.</div>
+            <a class="discord-btn" href="https://discord.gg/9GtgZVB5g4" target="_blank" rel="noopener noreferrer">
+              <img src="/static/discord.svg" alt="" width="22" height="22" class="discord-btn-icon">
+              <span data-i18n="more_discord_btn">Join Discord</span>
+            </a>
+          </div>
+
+          <div class="soft-card more-card">
+            <div class="soft-card-title" data-i18n="more_credits">Credits</div>
+            <div class="credits-list">
+              <div class="credit-row">
+                <div class="credit-name">Kasai</div>
+                <div class="credit-role" data-i18n="credit_kasai">Project lead — CFW builder, firmware tooling, UI, and overall development.</div>
+              </div>
+              <div class="credit-row">
+                <div class="credit-name">Consorsbank</div>
+                <div class="credit-role" data-i18n="credit_consors">BLE flashing support and the mA/km/h field-weakening patch.</div>
+              </div>
+              <div class="credit-row">
+                <div class="credit-name">juwitt01 · Sharif</div>
+                <div class="credit-role" data-i18n="credit_re">Reverse-engineering assistance.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="soft-card more-card">
+            <div class="soft-card-title" data-i18n="more_mirrors">Mirrors</div>
+            <div class="mirrors-list">
+              <a href="https://cfw.kasai.rip" target="_blank" rel="noopener noreferrer">cfw.kasai.rip</a>
+              <a href="https://x3fw.win/" target="_blank" rel="noopener noreferrer">x3fw.win</a>
+            </div>
+          </div>
+        </div><!-- /panel-more -->
+
+        </form>
+
+        <div class="status-bar" id="status-bar">
+            <span class="status-icon" id="status-icon"></span>
+            <span id="status-message"></span>
+        </div>
+
+        <footer class="footer">
+            <p class="footer-note" data-i18n="footer_note">Builder · private property use only</p>
+        </footer>
+    </div>
+
+    <div class="bms-modal" id="bms-modal">
+        <div class="bms-modal-box">
+            <div class="bms-modal-title" data-i18n="bms_modal_title">EXPERIMENTAL BMS FIRMWARE</div>
+            <div class="bms-modal-body" data-i18n-html="1" data-i18n="bms_modal_body">
+                You are about to flash an <b>experimental battery (BMS) firmware</b>.<br><br>
+                This can <b>permanently brick</b> your battery, cause <b>overcurrent</b>,
+                <b>fire</b>, <b>explosion</b> or total hardware failure.<br><br>
+                We are <b>NOT responsible</b> for any damage, injury or loss.
+                Proceed only if you fully understand the risk.
+            </div>
+            <label class="bms-modal-check">
+                <input type="checkbox" id="bms-modal-understand">
+                <span data-i18n="bms_modal_understand">I understand the risk and flash at my own responsibility</span>
+            </label>
+            <button type="button" class="bms-modal-btn" id="bms-accept-btn" disabled>
+                <span id="bms-accept-count">I ACCEPT (10s)</span>
+            </button>
+            <button type="button" class="bms-modal-cancel" id="bms-cancel-btn" data-i18n="bms_modal_cancel">cancel</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="/static/js/flasher.js">
+</script>
+    <script>
+
+        // ---- Disclaimer modal ----
+        (function() {
+            const overlay = document.getElementById('disclaimer-overlay');
+            const btn = document.getElementById('disclaimer-btn');
+            const checkbox = document.getElementById('disclaimer-check');
+            const checkWrap = document.getElementById('disclaimer-check-wrap');
+            const checkVisual = document.getElementById('disclaimer-checkbox-visual');
+            const timerEl = document.getElementById('disclaimer-timer');
+
+            // Check if already accepted this session
+            try {
+                if (sessionStorage.getItem('disclaimer_accepted') === '1') {
+                    overlay.style.display = 'none';
+                    return;
+                }
+            } catch(e) {}
+
+            let ready = false;
+            let remaining = 10;
+
+            function updateBtn() {
+                btn.disabled = !(ready && checkbox.checked);
+            }
+
+            // Countdown
+            const countdown = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(countdown);
+                    ready = true;
+                    timerEl.textContent = '';
+                    timerEl.classList.add('ready');
+                    updateBtn();
+                } else {
+                    timerEl.textContent = 'wait ' + remaining + 's';
+                }
+            }, 1000);
+
+            // Toggle checkbox via the label row
+            checkWrap.addEventListener('click', () => {
+                checkbox.checked = !checkbox.checked;
+                checkWrap.classList.toggle('checked', checkbox.checked);
+                updateBtn();
+            });
+
+            btn.addEventListener('click', () => {
+                if (btn.disabled) return;
+                overlay.style.display = 'none';
+                try { sessionStorage.setItem('disclaimer_accepted', '1'); } catch(e) {}
+            });
+        })();
+        // ---- End Disclaimer modal ----
+
+        const patchForm = document.getElementById('patch-form');
+        let lastBuiltFirmwareEnc = null;
+        let lastBuiltPartition = 'mcu';
+        window.lastBuiltFirmwareEnc = null;
+        window.lastBuiltPartition = 'mcu';
+        const flashBtn = document.getElementById('flash-btn');
+        const flashStatus = document.getElementById('flash-status');
+        flashBtn.addEventListener('click', async () => {
+            if (!lastBuiltFirmwareEnc) return;
+            flashBtn.disabled = true;
+            try {
+                const part = lastBuiltPartition || 'mcu';
+                await CfwFlasher.flash(part, lastBuiltFirmwareEnc, {
+                    onStatus: (msg) => { flashStatus.textContent = msg; },
+                    onPhase: (phase) => { flashStatus.textContent = 'Phase: ' + phase; },
+                    onProgress: (done, total) => {
+                        flashStatus.textContent = `Flashe ${part.toUpperCase()} Seite ${done}/${total}`;
+                        const fill = document.getElementById('hard-flash-bar-fill');
+                        if (fill) fill.style.width = Math.round(done/total*100) + '%';
+                    }
+                });
+            } catch (e) {
+                flashStatus.textContent = '❌ ' + e.message;
+            } finally {
+                flashBtn.disabled = false;
+            }
+        });
+        
+        /* ---- Builder / More tabs ---- */
+        (function(){
+            const hard = document.getElementById('panel-hard');
+            const more = document.getElementById('panel-more');
+            const hint = document.getElementById('mode-hint');
+            const tr = (key) => (i18n[currentLang] && i18n[currentLang][key]) || (i18n.en && i18n.en[key]) || '';
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-tab').forEach(tEl => tEl.classList.remove('active'));
+                    tab.classList.add('active');
+                    const mode = tab.getAttribute('data-mode');
+                    if (mode === 'more') {
+                        if (hard) hard.style.display = 'none';
+                        if (more) more.style.display = '';
+                        if (hint) hint.textContent = tr('mode_hint_more');
+                    } else {
+                        if (hard) hard.style.display = '';
+                        if (more) more.style.display = 'none';
+                        if (hint) hint.textContent = tr('mode_hint_builder');
+                    }
+                });
+            });
+        })();
+
+        const patchBtn = document.getElementById('patch-btn');
+        const btnLabel = document.getElementById('btn-label');
+        const spinner = document.getElementById('spinner');
+        const progress = document.getElementById('progress');
+        const statusBar = document.getElementById('status-bar');
+        const statusIcon = document.getElementById('status-icon');
+        const statusMessage = document.getElementById('status-message');
+        const modelButtons = Array.from(document.querySelectorAll('#model-switcher .switcher-btn'));
+        const componentButtons = Array.from(document.querySelectorAll('#component-switcher .switcher-btn'));
+        const bleAvailable = true;
+        const bmsAvailable = true;
+        const myModels = [{"coming_soon": false, "key": "g3", "label": "G3 Max", "variants": {"panic": {"available": true, "file": "firm_panic_btn.bin"}, "police": {"available": true, "file": "firm_pol_mode.bin"}}}, {"coming_soon": false, "key": "zt3", "label": "ZT3 Pro", "variants": {"nopol": {"available": true, "file": "firm_nopol_mode_nobatt-zt3.bin"}, "police": {"available": true, "file": "firm_pol_mode-zt3.bin"}, "police_nobatt": {"available": true, "file": "firm_pol_mode_nobatt-zt3.bin"}}}, {"coming_soon": false, "key": "f3", "label": "F3/F3 Pro", "variants": {"panic": {"available": true, "file": "firm_panic_btn.bin"}, "police": {"available": true, "file": "firm_pol_mode-f3.bin"}}}, {"coming_soon": false, "key": "gt3d", "label": "GT3D", "variants": {}}];
+
+        const i18n = {
+            en: {
+                tab_builder: "Builder",
+                tab_more: "More",
+                mode_hint_builder: "Build and patch firmware for your scooter.",
+                mode_hint_more: "Community, credits, and project mirrors.",
+                more_community: "Community",
+                more_community_sub: "Join the Discord for support, updates, and testing feedback.",
+                more_discord_btn: "Join Discord",
+                more_credits: "Credits",
+                credit_kasai: "Project lead — CFW builder, firmware tooling, UI, and overall development.",
+                credit_consors: "BLE flashing support and the mA/km/h field-weakening patch.",
+                credit_re: "Reverse-engineering assistance.",
+                more_mirrors: "Mirrors",
+                ble_flash_title: "BLE Flash",
+                ble_flash_hint: "After building, connect to your scooter and flash. On first pairing you may need to press the power button.",
+                ble_flash_btn: "Flash to scooter",
+                footer_note: "Builder · private property use only",
+
+                title: "kasai's <span class=\"accent\">cfw builder</span>",
+                fw_missing: "firmware files missing",
+                coming_soon: "coming soon",
+                ble_info: "GT3 BLE (screen firmware) patched directly from SHU compat mirror",
+                bms_warning: "EXPERIMENTAL BMS FIRMWARE FLAShing THIS CAN PERMANENTLY BRICK YOUR BATTERY, CAUSE OVERCURRENT, FIRE OR EXPLOSION. WE ARE NOT RESPONSIBLE FOR ANY DAMAGE.",
+                bms_info: "GT3 BMS (battery firmware) patched directly from SHU compat mirror",
+                bms_modal_title: "EXPERIMENTAL BMS FIRMWARE",
+                bms_modal_body: "You are about to flash an <b>experimental battery (BMS) firmware</b>.<br><br>This can <b>permanently brick</b> your battery, cause <b>overcurrent</b>, <b>fire</b>, <b>explosion</b> or total hardware failure.<br><br>We are <b>NOT responsible</b> for any damage, injury or loss. Proceed only if you fully understand the risk.",
+                bms_modal_understand: "I understand the risk and flash at my own responsibility",
+                bms_modal_cancel: "cancel",
+                bms_accept: "I ACCEPT",
+                bms_accept_wait: "I ACCEPT ({s}s)",
+                gt3_warning: "!UNSTABLE AND EXPERIMENTAL FIRMWARE!",
+                speed_settings: "Speed Limit Settings",
+                normal_profile: "legal profile",
+                tuning_profile: "tuning profile",
+                panic_settings: "Panic Settings",
+                police_mode: "police mode",
+                tuning_always_active: "tuning always active",
+                panicbutton: "panicbutton",
+                personalisation: "Personalisation",
+                show_battery_idle: "show battery when idle",
+                show_battery_desc: "shows battery on screen when not driving",
+                build: "build firmware",
+                building: "building",
+                mcu_coming_soon: "MCU coming soon",
+                build_completed: "build completed",
+                build_failed: "build failed",
+                mcu_info: "MCU field weakening • x3_MCU_AT32 (zt3 / f3 / g3) • gt3_MCU_AT32 (gt3)",
+                mcu_iqfw_head: "FW Torque Current (iqFW)",
+                mcu_idfw_head: "FW Current (idFW)",
+                mcu_od_head: "Power Overdrive",
+                mcu_iqfw_toggle: "iqFW enabled",
+                mcu_iqfw_desc: "Envelope 20\u201399 A",
+                mcu_idfw_toggle: "idFW enabled",
+                mcu_idfw_desc: "Injection 10\u2013120 A, slope in mA/km/h",
+                mcu_od_toggle: "Overdrive enabled",
+                mcu_od_desc: "0\u2013100 %",
+                mcu_amp: "Ampere",
+                mcu_current: "Current cap",
+                mcu_engage: "Field weakening start speed",
+                mcu_slope: "Slope",
+                mcu_od_label: "Overdrive",
+                mcu_presets: "presets",
+                mcu_preset_chill: "Chill Ride",
+                mcu_preset_fast: "Fast",
+                mcu_preset_unsafe: "Unsafe"
+            },
+            de: {
+                tab_builder: "Builder",
+                tab_more: "Mehr",
+                mode_hint_builder: "Firmware bauen und patchen.",
+                mode_hint_more: "Community, Credits und Spiegel-Links.",
+                more_community: "Community",
+                more_community_sub: "Discord für Support, Updates und Test-Feedback.",
+                more_discord_btn: "Discord beitreten",
+                more_credits: "Credits",
+                credit_kasai: "Projektleitung — CFW-Builder, Firmware-Tooling, UI und übrige Entwicklung.",
+                credit_consors: "BLE-Flashing sowie der mA/km/h Field-Weakening-Patch.",
+                credit_re: "Unterstützung beim Reverse Engineering.",
+                more_mirrors: "Spiegel",
+                ble_flash_title: "BLE-Flash",
+                ble_flash_hint: "Nach dem Build: mit dem Roller verbinden und flashen. Beim ersten Pairing ggf. Power-Taste drücken.",
+                ble_flash_btn: "Zum Roller flashen",
+                footer_note: "Builder · nur auf Privatgelände",
+
+                title: "kasai's <span class=\"accent\">cfw-builder</span>",
+                fw_missing: "Firmware-Dateien fehlen",
+                coming_soon: "demnächst",
+                ble_info: "GT3 BLE (Display-Firmware) direkt aus dem SHU-compat-Mirror gepatcht",
+                bms_warning: "EXPERIMENTELLE BMS-FIRMWARE DAS FLASHEN KANN DEINEN AKKU PERMANENT BRICKEN, ÜBERSTROM, FEUER ODER EINE EXPLOSION VERURSACHEN. WIR SIND NICHT FÜR SCHÄDEN VERANTWORTLICH.",
+                bms_info: "GT3 BMS (Akku-Firmware) direkt aus dem SHU-compat-Mirror gepatcht",
+                bms_modal_title: "EXPERIMENTELLE BMS-FIRMWARE",
+                bms_modal_body: "Du willst gleich eine <b>experimentelle Akku- (BMS-)Firmware</b> flashen.<br><br>Das kann deinen Akku <b>permanent bricken</b>, <b>Überstrom</b>, <b>Feuer</b>, <b>Explosion</b> oder einen totalen Hardware-Defekt verursachen.<br><br>Wir sind <b>NICHT</b> für Schäden, Verletzungen oder Verlust verantwortlich. Mach nur weiter, wenn du das Risiko voll verstehst.",
+                bms_modal_understand: "Ich verstehe das Risiko und flashe auf eigene Verantwortung",
+                bms_modal_cancel: "abbruch",
+                bms_accept: "ICH AKZEPTIERE",
+                bms_accept_wait: "ICH AKZEPTIERE ({s}s)",
+                gt3_warning: "!INSTABILE UND EXPERIMENTELLE FIRMWARE!",
+                speed_settings: "Geschwindigkeitsbegrenzung",
+                normal_profile: "legales Profil",
+                tuning_profile: "Tuning-Profil",
+                panic_settings: "Panic-Einstellungen",
+                police_mode: "Polizeimodus",
+                tuning_always_active: "Tuning immer aktiv",
+                panicbutton: "Panikknopf",
+                personalisation: "Personalisierung",
+                show_battery_idle: "Akku im Stand anzeigen",
+                show_battery_desc: "zeigt den Akku auf dem Display im Stand",
+                build: "Firmware erstellen",
+                building: "erstelle",
+                mcu_coming_soon: "MCU demnächst",
+                build_completed: "Erstellung abgeschlossen",
+                build_failed: "Erstellung fehlgeschlagen",
+                mcu_info: "MCU Feldschwächung • x3_MCU_AT32 (zt3 / f3 / g3) • gt3_MCU_AT32 (gt3)",
+                mcu_iqfw_head: "FW Drehmomentstrom (iqFW)",
+                mcu_idfw_head: "FW Strom (idFW)",
+                mcu_od_head: "Power Overdrive",
+                mcu_iqfw_toggle: "iqFW aktiv",
+                mcu_iqfw_desc: "Envelope 20\u201399 A",
+                mcu_idfw_toggle: "idFW aktiv",
+                mcu_idfw_desc: "Injektion 10\u2013120 A, Steigung in mA/km/h",
+                mcu_od_toggle: "Overdrive aktiv",
+                mcu_od_desc: "0\u2013100 %",
+                mcu_amp: "Ampere",
+                mcu_current: "Strom-Cap",
+                mcu_engage: "Feldschwäch-Startspeed",
+                mcu_slope: "Steigung",
+                mcu_od_label: "Overdrive",
+                mcu_presets: "Presets",
+                mcu_preset_chill: "Chill Ride",
+                mcu_preset_fast: "Fast",
+                mcu_preset_unsafe: "Unsafe"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function applyLang(lang) {
+            if (!i18n[lang]) lang = 'en';
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const val = i18n[lang][key];
+                if (val === undefined) return;
+                if (el.hasAttribute('data-i18n-html')) {
+                    el.innerHTML = val;
+                } else {
+                    el.textContent = val;
+                }
+            });
+            document.querySelectorAll('#lang-switch .lang-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.lang === lang);
+            });
+            if (!patchBtn.classList.contains('busy')) {
+                btnLabel.textContent = i18n[lang].build;
+            }
+            try { localStorage.setItem('cfw_lang', lang); } catch (e) {}
+            applyComponentState();
+        }
+
+        document.querySelectorAll('#lang-switch .lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+        });
+
+        const modelComponentAllowed = {
+            gt3d: ['MCU'],
+            g3: ['VCU', 'BLE', 'BMS', 'MCU'],
+            f3: ['VCU', 'BLE', 'BMS', 'MCU'],
+            zt3: ['VCU', 'BMS', 'MCU']
+        };
+
+        function refreshComponentAvailability() {
+            const model = currentModel();
+            const allowedForModel = modelComponentAllowed[model] || ['VCU'];
+            const activeComponent = getComponent();
+
+            componentButtons.forEach(btn => {
+                const comp = btn.dataset.component;
+                const allowed = allowedForModel.includes(comp);
+                btn.classList.toggle('disabled', !allowed);
+                btn.disabled = !allowed;
+            });
+
+            if (!allowedForModel.includes(activeComponent)) {
+                componentButtons.forEach(b => b.classList.toggle('active', b.dataset.component === 'VCU'));
+                applyComponentState();
+            }
+        }
+
+        function getComponent() {
+            const active = componentButtons.find(b => b.classList.contains('active'));
+            return active ? active.dataset.component : 'VCU';
+        }
+
+        function applyComponentState() {
+            const comp = getComponent();
+            const modelSwitcher = document.getElementById('model-switcher');
+            const accordion = document.getElementById('settings-accordion');
+            const mcuSettings = document.getElementById('mcu-settings');
+            const comingSoonBox = document.getElementById('component-comingsoon');
+            const bleInfo = document.getElementById('ble-info');
+        const bmsInfo = document.getElementById('bms-info');
+        const bmsWarning = document.getElementById('bms-warning');
+        const gt3Warning = document.getElementById('gt3-warning');
+
+            comingSoonBox.style.display = 'none';
+            bleInfo.style.display = 'none';
+            bmsInfo.style.display = 'none';
+            bmsWarning.style.display = 'none';
+            gt3Warning.style.display = (currentModel() === 'gt3d') ? 'block' : 'none';
+
+            if (comp === 'MCU') {
+                modelSwitcher.style.display = '';
+                accordion.style.display = 'none';
+                comingSoonBox.style.display = 'none';
+                mcuSettings.style.display = '';
+                document.getElementById('flash-block').style.display = '';
+
+                const mcuModels = ['g3', 'f3', 'zt3', 'gt3d'];
+                let mcuActive = false;
+                modelButtons.forEach(btn => {
+                    const show = mcuModels.includes(btn.dataset.model);
+                    btn.style.display = show ? '' : 'none';
+                    if (show && btn.classList.contains('active')) mcuActive = true;
+                });
+                if (!mcuActive) {
+                    modelButtons.forEach(b => b.classList.remove('active'));
+                    const first = modelButtons.find(b => mcuModels.includes(b.dataset.model));
+                    if (first) first.classList.add('active');
+                }
+
+                patchBtn.disabled = false;
+                refreshComponentAvailability();
+                return;
+            }
+
+            modelSwitcher.style.display = '';
+            accordion.style.display = '';
+            mcuSettings.style.display = 'none';
+            document.getElementById('flash-block').style.display = (comp === 'VCU') ? '' : 'none';
+
+            const allowed = (comp === 'BLE') ? ['g3', 'f3']
+                : (comp === 'BMS') ? ['g3', 'f3', 'zt3']
+                : (comp === 'MCU') ? ['g3', 'f3', 'zt3', 'gt3d']
+                : ['g3', 'f3', 'zt3'];
+
+            let activeAllowed = false;
+            modelButtons.forEach(btn => {
+                const show = allowed.includes(btn.dataset.model);
+                btn.style.display = show ? '' : 'none';
+                if (show && btn.classList.contains('active')) activeAllowed = true;
+            });
+
+            if (!activeAllowed) {
+                modelButtons.forEach(b => b.classList.remove('active'));
+                const first = modelButtons.find(b => allowed.includes(b.dataset.model));
+                if (first) first.classList.add('active');
+            }
+
+            if (comp === 'BLE') {
+                accordion.style.display = 'none';
+                bleInfo.style.display = 'block';
+                patchBtn.disabled = !bleAvailable;
+            } else if (comp === 'BMS') {
+                accordion.style.display = 'none';
+                bmsWarning.style.display = 'block';
+                bmsInfo.style.display = 'block';
+                patchBtn.disabled = !bmsAvailable;
+            } else {
+                applyModelState();
+            }
+
+            refreshComponentAvailability();
+        }
+
+        const policeToggle = document.getElementById('police-toggle');
+        const onlyTuningToggle = document.getElementById('onlytuning-toggle');
+        const panicToggle = document.getElementById('panic-toggle');
+        const ghostToggle = document.getElementById('ghost-toggle');
+
+        const s = { police: true, panic: false, onlyTuning: false, ghost: false };
+
+        function currentModel() {
+            const active = modelButtons.find(b => b.classList.contains('active'));
+            return active ? active.dataset.model : 'g3';
+        }
+
+        function modelData(key) {
+            return myModels.find(x => x.key === key);
+        }
+
+        function variantAvailable(key, vkey) {
+            const m = modelData(key);
+            if (!m || m.coming_soon) return false;
+            const v = m.variants && m.variants[vkey];
+            return !!(v && v.available);
+        }
+
+        function showSection(id, show) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('hidden', !show);
+        }
+
+        function setToggle(input, enabled, locked) {
+            input.checked = enabled;
+            input.disabled = locked;
+        }
+
+        function setNormalProfileState(show) {
+            if (!['g3', 'f3'].includes(currentModel())) show = false;
+            const wrap = document.getElementById('normal-profile');
+            const ids = ['normal-eco', 'normal-drive', 'normal-sport'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = !show;
+            });
+            if (wrap) wrap.style.display = show ? '' : 'none';
+            if (show) {
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    const displayEl = document.getElementById(id + '-display');
+                    if (el && displayEl) {
+                        displayEl.textContent = el.value;
+                        paintSlider(el);
+                    }
+                });
+            }
+        }
+
+        function resetState() {
+            s.police = true;
+            s.panic = false;
+            s.onlyTuning = false;
+            s.ghost = false;
+        }
+
+        function applyModelState() {
+            const model = currentModel();
+            const m = modelData(model);
+            const hasAnyVariant = m && !m.coming_soon &&
+                Object.values(m.variants || {}).some(v => v.available);
+
+            showSection('section-speed', true);
+            showSection('section-mode', !!m && !m.coming_soon);
+            showSection('section-personal', model === 'zt3');
+            setNormalProfileState(false);
+
+            const rowVisible = !!m && !m.coming_soon;
+            document.getElementById('police-row').style.display = rowVisible ? '' : 'none';
+            document.getElementById('panic-row').style.display = ['g3', 'f3'].includes(model) && rowVisible ? '' : 'none';
+            document.getElementById('onlytuning-row').style.display = model === 'zt3' && rowVisible ? '' : 'none';
+
+            if (!hasAnyVariant) {
+                setToggle(policeToggle, false, true);
+                setToggle(onlyTuningToggle, false, true);
+                setToggle(panicToggle, false, true);
+                setToggle(ghostToggle, false, true);
+                patchBtn.disabled = true;
+                return;
+            }
+
+            if (model === 'g3' || model === 'f3') {
+                const policeAvail = variantAvailable(model, 'police');
+                const panicAvail = variantAvailable(model, 'panic');
+
+                if (policeAvail && panicAvail) {
+                    setToggle(policeToggle, s.police, false);
+                    setToggle(panicToggle, !s.police, false);
+                } else if (policeAvail) {
+                    setToggle(policeToggle, true, true);
+                    setToggle(panicToggle, false, true);
+                } else {
+                    setToggle(policeToggle, false, true);
+                    setToggle(panicToggle, true, true);
+                }
+                s.police = policeToggle.checked;
+                s.panic = panicToggle.checked;
+                setNormalProfileState(!s.police);
+            }
+
+            if (model === 'zt3') {
+                const polAvail = variantAvailable('zt3', 'police');
+                const polNoBattAvail = variantAvailable('zt3', 'police_nobatt');
+                const nopolAvail = variantAvailable('zt3', 'nopol');
+
+                if (s.onlyTuning && nopolAvail) {
+                    setToggle(onlyTuningToggle, true, false);
+                    setToggle(policeToggle, false, !(polAvail || polNoBattAvail));
+                } else {
+                    setToggle(onlyTuningToggle, false, !nopolAvail);
+                    setToggle(policeToggle, true, !(polAvail || polNoBattAvail));
+                    s.police = true;
+                    s.onlyTuning = false;
+                }
+
+                const ghostAvail = polAvail && polNoBattAvail;
+                const onlyTuningActive = onlyTuningToggle.checked;
+                const ghostEnabled = ghostAvail && !onlyTuningActive;
+                if (!ghostEnabled) s.ghost = false;
+                setToggle(ghostToggle, s.ghost && ghostEnabled, !ghostEnabled);
+            }
+
+            updateBuildState();
+            refreshComponentAvailability();
+        }
+
+        function updateBuildState() {
+            const model = currentModel();
+            let selectedAvailable = false;
+            if (model === 'g3' || model === 'f3') {
+                selectedAvailable = policeToggle.checked
+                    ? variantAvailable(model, 'police')
+                    : variantAvailable(model, 'panic');
+            } else if (model === 'zt3') {
+                if (onlyTuningToggle.checked) {
+                    selectedAvailable = variantAvailable('zt3', 'nopol');
+                } else {
+                    selectedAvailable = ghostToggle.checked
+                        ? variantAvailable('zt3', 'police')
+                        : variantAvailable('zt3', 'police_nobatt');
+                }
+            } else if (model === 'f3') {
+                selectedAvailable = policeToggle.checked
+                    ? variantAvailable('f3', 'police')
+                    : variantAvailable('f3', 'panic');
+            }
+            patchBtn.disabled = !selectedAvailable;
+        }
+
+        policeToggle.addEventListener('change', function () {
+            s.police = this.checked;
+            if (currentModel() === 'g3' || currentModel() === 'f3') {
+                s.panic = !this.checked;
+                setToggle(panicToggle, s.panic, false);
+                setNormalProfileState(!this.checked);
+            } else if (currentModel() === 'zt3') {
+                if (this.checked) {
+                    s.onlyTuning = false;
+                    setToggle(onlyTuningToggle, false, false);
+                    const polAvail = variantAvailable('zt3', 'police');
+                    const polNoBattAvail = variantAvailable('zt3', 'police_nobatt');
+                    const ghostAvail = polAvail && polNoBattAvail;
+                    setToggle(ghostToggle, s.ghost && ghostAvail, !ghostAvail);
+                }
+            }
+            updateBuildState();
+        });
+
+        onlyTuningToggle.addEventListener('change', function () {
+            if (currentModel() !== 'zt3') return;
+            if (this.checked) {
+                s.onlyTuning = true;
+                s.police = false;
+                s.ghost = false;
+                setToggle(policeToggle, false, false);
+                setToggle(ghostToggle, false, true);
+            } else {
+                s.onlyTuning = false;
+                s.police = true;
+                setToggle(policeToggle, true, false);
+                const polAvail = variantAvailable('zt3', 'police');
+                const polNoBattAvail = variantAvailable('zt3', 'police_nobatt');
+                const ghostAvail = polAvail && polNoBattAvail;
+                setToggle(ghostToggle, false, !ghostAvail);
+            }
+            updateBuildState();
+        });
+
+        panicToggle.addEventListener('change', function () {
+            if (!['g3', 'f3'].includes(currentModel())) return;
+            s.panic = this.checked;
+            s.police = !this.checked;
+            setToggle(policeToggle, s.police, false);
+            setNormalProfileState(this.checked);
+            updateBuildState();
+        });
+
+        ghostToggle.addEventListener('change', function () {
+            s.ghost = this.checked;
+            updateBuildState();
+        });
+
+        componentButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (btn.disabled || btn.classList.contains('disabled')) return;
+                componentButtons.forEach(b => b.classList.toggle('active', b === btn));
+                applyComponentState();
+            });
+        });
+
+        modelButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (btn.disabled || btn.classList.contains('disabled')) return;
+                if (btn.style.display === 'none') return;
+                modelButtons.forEach(b => b.classList.toggle('active', b === btn));
+                resetState();
+                applyComponentState();
+            });
+        });
+
+        document.querySelectorAll('[data-toggle-section]').forEach(head => {
+            head.addEventListener('click', function () {
+                const section = this.closest('.section');
+                if (section) section.classList.toggle('open');
+            });
+        });
+
+        const sliders = [
+            { id: 'eco', display: 'eco-display' },
+            { id: 'drive', display: 'drive-display' },
+            { id: 'sport', display: 'sport-display' },
+            { id: 'normal-eco', display: 'normal-eco-display' },
+            { id: 'normal-drive', display: 'normal-drive-display' },
+            { id: 'normal-sport', display: 'normal-sport-display' },
+            { id: 'mcu-iqfw', display: 'mcu-iqfw-display' },
+            { id: 'mcu-idfw', display: 'mcu-idfw-display' },
+            { id: 'mcu-engage', display: 'mcu-engage-display' },
+            { id: 'mcu-slope', display: 'mcu-slope-display' },
+            { id: 'mcu-od', display: 'mcu-od-display' }
+        ];
+
+        function paintSlider(slider) {
+            const p = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, rgba(168,130,255,0.20) ${p}%, rgba(255,255,255,0.06) ${p}%)`;
+        }
+
+        sliders.forEach(({ id, display }) => {
+            const slider = document.getElementById(id);
+            const displayEl = document.getElementById(display);
+            if (!slider || !displayEl) return;
+            displayEl.textContent = slider.value;
+            paintSlider(slider);
+            slider.addEventListener('input', () => {
+                displayEl.textContent = slider.value;
+                paintSlider(slider);
+            });
+        });
+
+        function syncMcuSliders() {
+            document.getElementById('mcu-iqfw').disabled = !document.getElementById('mcu-iqfw-enabled').checked;
+            const idEn = document.getElementById('mcu-idfw-enabled').checked;
+            document.getElementById('mcu-idfw').disabled = !idEn;
+            document.getElementById('mcu-engage').disabled = !idEn;
+            document.getElementById('mcu-slope').disabled = !idEn;
+            document.getElementById('mcu-od').disabled = !document.getElementById('mcu-od-enabled').checked;
+        }
+
+        ['mcu-iqfw-enabled', 'mcu-idfw-enabled', 'mcu-od-enabled'].forEach(id => {
+            document.getElementById(id).addEventListener('change', syncMcuSliders);
+        });
+        syncMcuSliders();
+
+        /* ---- MCU presets ---- */
+        const MCU_PRESETS = {
+            g3: {
+                chill:  { iqfw: 35, idfw: 40, engage: 30, od: 15, slope: 1200 },
+                fast:   { iqfw: 60, idfw: 70, engage: 30, od: 80, slope: 1600 },
+                unsafe: { iqfw: 99, idfw: 120, engage: 30, od: 100, slope: 3000 }
+            },
+            zt3: {
+                chill:  { iqfw: 35, idfw: 40, engage: 30, od: 15, slope: 1200 },
+                fast:   { iqfw: 60, idfw: 70, engage: 30, od: 80, slope: 1600 },
+                unsafe: { iqfw: 99, idfw: 120, engage: 30, od: 100, slope: 3000 }
+            },
+            f3: {
+                chill:  { iqfw: 25, idfw: 30, engage: 30, od: 15, slope: 1000 },
+                fast:   { iqfw: 45, idfw: 60, engage: 30, od: 70, slope: 1300 },
+                unsafe: { iqfw: 99, idfw: 120, engage: 30, od: 100, slope: 2200 }
+            }
+        };
+
+        function setMcuSlider(id, value) {
+            const slider = document.getElementById(id);
+            const displayEl = document.getElementById(id + '-display');
+            if (!slider) return;
+            slider.value = value;
+            if (displayEl) displayEl.textContent = value;
+            paintSlider(slider);
+        }
+
+        function applyMcuPreset(name) {
+            const preset = (MCU_PRESETS[currentModel()] || {})[name];
+            if (!preset) return;
+
+            document.getElementById('mcu-iqfw-enabled').checked = true;
+            document.getElementById('mcu-idfw-enabled').checked = true;
+            document.getElementById('mcu-od-enabled').checked = true;
+
+            setMcuSlider('mcu-iqfw', preset.iqfw);
+            setMcuSlider('mcu-idfw', preset.idfw);
+            setMcuSlider('mcu-engage', preset.engage);
+            setMcuSlider('mcu-slope', preset.slope);
+            setMcuSlider('mcu-od', preset.od);
+
+            syncMcuSliders();
+        }
+
+        document.querySelectorAll('.preset-btn[data-preset]').forEach(btn => {
+            btn.addEventListener('click', () => applyMcuPreset(btn.dataset.preset));
+        });
+
+        applyModelState();
+
+        let _savedLang = 'en';
+        try { _savedLang = localStorage.getItem('cfw_lang') || 'en'; } catch (e) {}
+        applyLang(_savedLang);
+
+        function setBusy(busy) {
+            patchBtn.disabled = busy;
+            btnLabel.textContent = busy ? i18n[currentLang].building : i18n[currentLang].build;
+            spinner.style.display = busy ? 'inline-block' : 'none';
+            progress.classList.toggle('show', busy);
+        }
+
+        function showStatus(type, icon, message) {
+            statusBar.className = 'status-bar show ' + type;
+            statusIcon.textContent = icon;
+            statusMessage.textContent = message;
+            clearTimeout(statusBar._timeout);
+            statusBar._timeout = setTimeout(() => {
+                statusBar.classList.remove('show');
+            }, 6000);
+        }
+
+        async function runBuild() {
+            setBusy(true);
+
+            const comp = getComponent();
+            let response;
+
+            let endpoint, formData;
+
+            if (comp === 'BLE' || comp === 'BMS') {
+                endpoint = comp === 'BLE' ? '/patch/ble' : '/patch/bms';
+                formData = new FormData();
+                formData.append('model', currentModel());
+            } else if (comp === 'MCU') {
+                endpoint = '/patch/mcu';
+                formData = new FormData();
+                formData.append('model', currentModel());
+                formData.append('iqfw_enabled', document.getElementById('mcu-iqfw-enabled').checked ? 'true' : 'false');
+                formData.append('iqfw', document.getElementById('mcu-iqfw').value);
+                formData.append('idfw_enabled', document.getElementById('mcu-idfw-enabled').checked ? 'true' : 'false');
+                formData.append('idfw', document.getElementById('mcu-idfw').value);
+                formData.append('engage', document.getElementById('mcu-engage').value);
+                formData.append('slope', document.getElementById('mcu-slope').value);
+                formData.append('od_enabled', document.getElementById('mcu-od-enabled').checked ? 'true' : 'false');
+                formData.append('overdrive', document.getElementById('mcu-od').value);
+            } else {
+                endpoint = '/patch';
+                formData = new FormData();
+                formData.append('model', currentModel());
+                formData.append('eco', document.getElementById('eco').value);
+                formData.append('drive', document.getElementById('drive').value);
+                formData.append('sport', document.getElementById('sport').value);
+                formData.append('normal_eco', document.getElementById('normal-eco').value);
+                formData.append('normal_drive', document.getElementById('normal-drive').value);
+                formData.append('normal_sport', document.getElementById('normal-sport').value);
+                formData.append('police_mode', policeToggle.checked ? 'true' : 'false');
+                formData.append('panicbutton', panicToggle.checked ? 'true' : 'false');
+                formData.append('ghostmod', ghostToggle.checked ? 'true' : 'false');
+                formData.append('only_tuning', onlyTuningToggle.checked ? 'true' : 'false');
+            }
+
+            response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+
+            try {
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/["']/g, '') || 'CFW_PATCHED.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showStatus('success', '✅', i18n[currentLang].build_completed);
+
+                if (comp === 'MCU' || comp === 'VCU') {
+                    try {
+                        const zip = await JSZip.loadAsync(blob);
+                        const encFile = zip.file('FIRM.bin.enc');
+                        if (encFile) {
+                            lastBuiltFirmwareEnc = new Uint8Array(await encFile.async('arraybuffer'));
+                            lastBuiltPartition = (comp === 'VCU') ? 'vcu' : 'mcu';
+                            window.lastBuiltFirmwareEnc = lastBuiltFirmwareEnc;
+                            window.lastBuiltPartition = lastBuiltPartition;
+                            flashBtn.disabled = false;
+                            flashStatus.textContent = 'bereit zum Flashen (' + lastBuiltPartition.toUpperCase() + ', ' + lastBuiltFirmwareEnc.length + ' B)';
+                        }
+                    } catch (e) { /* zip-Parsing fehlgeschlagen -> Flash-Button bleibt deaktiviert */ }
+                }
+
+            } catch (error) {
+                showStatus('error', '❌', error.message);
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        const bmsModal = document.getElementById('bms-modal');
+        const bmsAcceptBtn = document.getElementById('bms-accept-btn');
+        const bmsAcceptCount = document.getElementById('bms-accept-count');
+        const bmsCancelBtn = document.getElementById('bms-cancel-btn');
+        const bmsUnderstand = document.getElementById('bms-modal-understand');
+        let bmsCountdownTimer = null;
+        let bmsReady = false;
+
+        function updateBmsAcceptState() {
+            bmsAcceptBtn.disabled = !(bmsReady && bmsUnderstand.checked);
+        }
+
+        function openBmsModal() {
+            bmsModal.style.display = 'flex';
+            bmsUnderstand.checked = false;
+            bmsReady = false;
+            let remaining = 10;
+            bmsAcceptCount.textContent = i18n[currentLang].bms_accept_wait.replace('{s}', remaining);
+            updateBmsAcceptState();
+            clearInterval(bmsCountdownTimer);
+            bmsCountdownTimer = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(bmsCountdownTimer);
+                    bmsReady = true;
+                    bmsAcceptCount.textContent = i18n[currentLang].bms_accept;
+                    updateBmsAcceptState();
+                } else {
+                    bmsAcceptCount.textContent = i18n[currentLang].bms_accept_wait.replace('{s}', remaining);
+                }
+            }, 1000);
+        }
+
+        bmsUnderstand.addEventListener('change', updateBmsAcceptState);
+
+        bmsAcceptBtn.addEventListener('click', () => {
+            if (bmsAcceptBtn.disabled) return;
+            clearInterval(bmsCountdownTimer);
+            bmsModal.style.display = 'none';
+            runBuild();
+        });
+
+        bmsCancelBtn.addEventListener('click', () => {
+            clearInterval(bmsCountdownTimer);
+            bmsModal.style.display = 'none';
+        });
+
+        patchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const comp = getComponent();
+            if (comp === 'BMS') {
+                openBmsModal();
+                return;
+            }
+            runBuild();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            navigator.sendBeacon('/cleanup');
+        });
+    </script>
+    <script src="/static/js/liquid-glass.js"></script>
+</body>
+</html>
